@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -13,9 +13,12 @@ export function Navbar() {
   const [user, setUser] = useState<Profile | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const supabase = createClient();
+
     const getUser = async () => {
       const {
         data: { user: authUser },
@@ -47,9 +50,10 @@ export function Navbar() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
     setIsProfileOpen(false);
